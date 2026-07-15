@@ -6,9 +6,9 @@ namespace NBAStatisticsProject.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Team { get; set; } = string.Empty;
-        public int Points { get; set; }
-        public int Rebounds { get; set; }
-        public int Assists { get; set; }
+        public string Position { get; set; } = string.Empty;
+        public int TeamId { get; set; }
+        public Team Team { get; set; } = null!;
+        public ICollection<PlayerGameStat> GameStats { get; set; } = new List<PlayerGameStat>();
     }
 }
