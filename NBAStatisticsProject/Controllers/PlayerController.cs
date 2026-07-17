@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
-using NBAStatisticsProject.Dtos;
+using NBAStatisticsProject.DTOs;
 using NBAStatisticsProject.Models;
+using NBAStatisticsProject.Mapping;
 
 namespace NBAStatisticsProject.Controllers
 {
@@ -21,14 +21,7 @@ namespace NBAStatisticsProject.Controllers
         public async Task<IActionResult> GetAllPlayers()
         {
             var players = await _context.Players
-                .Select(p => new PlayerDto
-                (
-                    p.Id,
-                    p.Name,
-                    p.Position,
-                    p.TeamId,
-                    p.Team!.Name
-                ))
+                .ToDto()
                 .ToListAsync();
             return Ok(players);
         }
@@ -37,14 +30,7 @@ namespace NBAStatisticsProject.Controllers
         {
             var player = await _context.Players
                 .Where(p => p.Id == id)
-                .Select(p => new PlayerDto
-                (
-                    p.Id,
-                    p.Name,
-                    p.Position,
-                    p.TeamId,
-                    p.Team!.Name
-                ))
+                .ToDto()
                 .FirstOrDefaultAsync();
             if (player == null)
                 return NotFound();
@@ -56,14 +42,7 @@ namespace NBAStatisticsProject.Controllers
         {
             var playersFromSameTeam = await _context.Players
                 .Where(p => p.TeamId == teamId)
-                .Select(p => new PlayerDto
-                (
-                    p.Id,
-                    p.Name,
-                    p.Position,
-                    p.TeamId,
-                    p.Team!.Name
-                ))
+                .ToDto()
                 .ToListAsync();
             return Ok(playersFromSameTeam);
         }
@@ -88,14 +67,8 @@ namespace NBAStatisticsProject.Controllers
             await _context.SaveChangesAsync();
             var createdPlayerDto = await _context.Players
                 .Where(p => p.Id == player.Id)
-                .Select(p => new PlayerDto
-                (
-                    p.Id,
-                    p.Name,
-                    p.Position,
-                    p.TeamId,
-                    p.Team!.Name
-                )).FirstAsync();
+                .ToDto()
+                .FirstAsync();
             return CreatedAtAction(nameof(GetPlayersById), new { id = player.Id }, createdPlayerDto);
         }
         [HttpPost("bulk")]
@@ -114,19 +87,13 @@ namespace NBAStatisticsProject.Controllers
 
             var createdPlayers = await _context.Players
                 .Where(p => ids.Contains(p.Id))
-                .Select(p => new PlayerDto
-                (
-                    p.Id,
-                    p.Name,
-                    p.Position,
-                    p.TeamId,
-                    p.Team!.Name
-                )).ToListAsync();
+                .ToDto()
+                .ToListAsync();
             return Ok(createdPlayers);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ChangePlayersStats(int id, PlayerCreateDto playerCreateDto)
+        public async Task<IActionResult> UpdatePlayer(int id, PlayerCreateDto playerCreateDto)
         {
             var existingPlayer = await _context.Players.FindAsync(id);
             if (existingPlayer == null)
@@ -139,14 +106,7 @@ namespace NBAStatisticsProject.Controllers
             await _context.SaveChangesAsync();
             var updatedPlayerDto = await _context.Players
                 .Where(p => p.Id == id)
-                .Select(p => new PlayerDto
-                (
-                    p.Id,
-                    p.Name,
-                    p.Position,
-                    p.TeamId,
-                    p.Team!.Name
-                ))
+                .ToDto()
                 .FirstOrDefaultAsync();
             return Ok(updatedPlayerDto);
         }

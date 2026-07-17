@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
-using NBAStatisticsProject.Dtos;
+using NBAStatisticsProject.DTOs;
 using NBAStatisticsProject.Models;
+using NBAStatisticsProject.Mapping;
 
 namespace NBAStatisticsProject.Controllers
 {
@@ -20,22 +21,7 @@ namespace NBAStatisticsProject.Controllers
         public async Task<IActionResult> GetAllPlayerGameStats()
         {
             var playerGameStats = await _context.PlayerGameStats
-                .Select(pgs => new PlayerGameStatDto(                
-                    pgs.Id,
-                    pgs.PlayerId,
-                    pgs.Player!.Name,
-                    pgs.GameId,
-                    pgs.Game!.Date,
-                    pgs.Game.HomeTeam!.Name,
-                    pgs.Game.AwayTeam!.Name,
-                    pgs.Points,
-                    pgs.Assists,
-                    pgs.Rebounds,
-                    pgs.MinutesPlayed,
-                    pgs.Steals,
-                    pgs.Blocks,
-                    pgs.Turnovers
-                ))
+                .ToDto()
                 .ToListAsync();
             return Ok(playerGameStats);
 
@@ -46,22 +32,7 @@ namespace NBAStatisticsProject.Controllers
         {
             var playerGameStat = await _context.PlayerGameStats
                 .Where(pgs => pgs.Id == id)
-                .Select(pgs => new PlayerGameStatDto(
-                    pgs.Id,
-                    pgs.PlayerId,
-                    pgs.Player!.Name,
-                    pgs.GameId,
-                    pgs.Game!.Date,
-                    pgs.Game.HomeTeam!.Name,
-                    pgs.Game.AwayTeam!.Name,
-                    pgs.Points,
-                    pgs.Assists,
-                    pgs.Rebounds,
-                    pgs.MinutesPlayed,
-                    pgs.Steals,
-                    pgs.Blocks,
-                    pgs.Turnovers
-                ))
+                .ToDto()
                 .FirstOrDefaultAsync();            
             if (playerGameStat == null)
                 return NotFound();
@@ -87,22 +58,8 @@ namespace NBAStatisticsProject.Controllers
             await _context.SaveChangesAsync();
             var createdPlayerGameStat = await _context.PlayerGameStats
                 .Where(pgs => pgs.Id == playerGameStat.Id)
-                .Select(pgs => new PlayerGameStatDto(
-                    pgs.Id,
-                    pgs.PlayerId,
-                    pgs.Player!.Name,
-                    pgs.GameId,
-                    pgs.Game!.Date,
-                    pgs.Game.HomeTeam!.Name,
-                    pgs.Game.AwayTeam!.Name,
-                    pgs.Points,
-                    pgs.Assists,
-                    pgs.Rebounds,
-                    pgs.MinutesPlayed,
-                    pgs.Steals,
-                    pgs.Blocks,
-                    pgs.Turnovers
-                )).FirstAsync();
+                .ToDto()
+                .FirstAsync();
             return CreatedAtAction(nameof(GetPlayerGameStatById), new { id = playerGameStat.Id }, createdPlayerGameStat);
         }
         [HttpPost("bulk")]
@@ -127,22 +84,8 @@ namespace NBAStatisticsProject.Controllers
 
             var createdPlayerGameStats = await _context.PlayerGameStats
                 .Where(pgs => ids.Contains(pgs.Id))
-                .Select(pgs => new PlayerGameStatDto(
-                    pgs.Id,
-                    pgs.PlayerId,
-                    pgs.Player!.Name,
-                    pgs.GameId,
-                    pgs.Game!.Date,
-                    pgs.Game.HomeTeam!.Name,
-                    pgs.Game.AwayTeam!.Name,
-                    pgs.Points,
-                    pgs.Assists,
-                    pgs.Rebounds,
-                    pgs.MinutesPlayed,
-                    pgs.Steals,
-                    pgs.Blocks,
-                    pgs.Turnovers
-                )).ToListAsync();
+                .ToDto()
+                .ToListAsync();
             return Ok(createdPlayerGameStats);
         }
 
@@ -164,22 +107,8 @@ namespace NBAStatisticsProject.Controllers
             await _context.SaveChangesAsync();
             var updatedPlayerGameStat = await _context.PlayerGameStats
                 .Where(pgs => pgs.Id == id)
-                .Select(pgs => new PlayerGameStatDto(
-                    pgs.Id,
-                    pgs.PlayerId,
-                    pgs.Player!.Name,
-                    pgs.GameId,
-                    pgs.Game!.Date,
-                    pgs.Game.HomeTeam!.Name,
-                    pgs.Game.AwayTeam!.Name,
-                    pgs.Points,
-                    pgs.Assists,
-                    pgs.Rebounds,
-                    pgs.MinutesPlayed,
-                    pgs.Steals,
-                    pgs.Blocks,
-                    pgs.Turnovers
-                )).FirstAsync();
+                .ToDto()
+                .FirstAsync();
             return Ok(updatedPlayerGameStat);
         }
 

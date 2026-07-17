@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
-using NBAStatisticsProject.Dtos;
+using NBAStatisticsProject.DTOs;
 using NBAStatisticsProject.Models;
+using NBAStatisticsProject.Mapping;
 
 namespace NBAStatisticsProject.Controllers
 {
@@ -27,13 +28,7 @@ namespace NBAStatisticsProject.Controllers
                 query = query.Where(t => t.IsActive);
             
             var teams = await query
-                .Select(t => new TeamDto
-                (
-                    t.Id,
-                    t.Name,
-                    t.City,
-                    t.IsActive
-                ))
+                .ToDto()
                 .ToListAsync();
             return Ok(teams);
         }
@@ -43,13 +38,7 @@ namespace NBAStatisticsProject.Controllers
         {
             var team = await _context.Teams
                 .Where(t => t.Id == id)
-                .Select(t => new TeamDto
-                (
-                    t.Id,
-                    t.Name,
-                    t.City,
-                    t.IsActive
-                ))
+                .ToDto()
                 .FirstOrDefaultAsync();
             if (team == null)
                 return NotFound();
@@ -66,7 +55,7 @@ namespace NBAStatisticsProject.Controllers
             };
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
-            var createdTeamDto = new TeamDto(team.Id, team.Name, team.City, team.IsActive);
+            var createdTeamDto = team.ToDto();
             return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, createdTeamDto);
         }
 
@@ -82,7 +71,7 @@ namespace NBAStatisticsProject.Controllers
             await _context.SaveChangesAsync();
 
             var createdTeams = teams
-                .Select(t => new TeamDto(t.Id, t.Name, t.City, t.IsActive))
+                .Select(t => t.ToDto())
                 .ToList();
 
             return Ok(createdTeams);
@@ -98,7 +87,7 @@ namespace NBAStatisticsProject.Controllers
             existingTeam.Name = teamCreateDto.Name;
             existingTeam.City = teamCreateDto.City;
             await _context.SaveChangesAsync();
-            var updatedTeamDto = new TeamDto(existingTeam.Id, existingTeam.Name, existingTeam.City, existingTeam.IsActive);
+            var updatedTeamDto = existingTeam.ToDto();
             return Ok(updatedTeamDto);
         }
 
