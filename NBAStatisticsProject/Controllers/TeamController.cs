@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
+using NBAStatisticsProject.Dtos;
 using NBAStatisticsProject.Models;
 
 namespace NBAStatisticsProject.Controllers
@@ -20,47 +21,78 @@ namespace NBAStatisticsProject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllTeams()
         {
-            var teams = await _context.Teams.ToListAsync();
+            var teams = await _context.Teams
+                .Select(t => new TeamDto
+                (
+                    t.Id,
+                    t.Name,
+                    t.City
+                ))
+                .ToListAsync();
             return Ok(teams);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTeamById(int id)
         {
-            var team = await _context.Teams.FindAsync(id);
+            var team = await _context.Teams
+                .Where(t => t.Id == id)
+                .Select(t => new TeamDto
+                (
+                    t.Id,
+                    t.Name,
+                    t.City
+                ))
+                .FirstOrDefaultAsync();
             if (team == null)
                 return NotFound();
             return Ok(team);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddTeam(Team team)
+        public async Task<IActionResult> AddTeam(TeamCreateDto teamDto)
         {
+            var team = new Team
+            {
+                Name = teamDto.Name,
+                City = teamDto.City
+            };
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, team);
+            var createdTeamDto = new TeamDto(team.Id, team.Name, team.City);
+            return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, createdTeamDto);
         }
 
         [HttpPost("bulk")]
-        public async Task<IActionResult> AddTeams(List<Team> teams)
+        public async Task<IActionResult> AddTeams(List<TeamCreateDto> teamDtos)
         {
+            var teams = teamDtos.Select(teamDto => new Team
+            {
+                Name = teamDto.Name,
+                City = teamDto.City
+            }).ToList();
             _context.Teams.AddRange(teams);
             await _context.SaveChangesAsync();
-            return Ok(teams);
+
+            var createdTeams = teams
+                .Select(t => new TeamDto(t.Id, t.Name, t.City))
+                .ToList();
+
+            return Ok(createdTeams);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTeam(int id, Team team)
+        public async Task<IActionResult> UpdateTeam(int id, TeamCreateDto teamCreateDto)
         {
             var existingTeam = await _context.Teams.FindAsync(id);
             if(existingTeam == null)
                 return NotFound();
 
-            existingTeam.Name = team.Name;
-            existingTeam.City = team.City;
-
+            existingTeam.Name = teamCreateDto.Name;
+            existingTeam.City = teamCreateDto.City;
             await _context.SaveChangesAsync();
-            return Ok(existingTeam);
+            var updatedTeamDto = new TeamDto(existingTeam.Id, existingTeam.Name, existingTeam.City);
+            return Ok(updatedTeamDto);
         }
 
         [HttpDelete("{id}")]
