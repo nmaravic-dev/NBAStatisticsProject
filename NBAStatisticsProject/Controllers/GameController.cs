@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
-using NBAStatisticsProject.Dtos;
+using NBAStatisticsProject.DTOs;
+using NBAStatisticsProject.Mapping;
 using NBAStatisticsProject.Models;
 
 namespace NBAStatisticsProject.Controllers
@@ -21,18 +22,7 @@ namespace NBAStatisticsProject.Controllers
         public async Task<IActionResult> GetAllGames()
         {
             var games = await _context.Games
-                .Select(g => new GameDto
-                (
-                    g.Id,
-                    g.Date,
-                    g.Season,
-                    g.HomeTeamId,
-                    g.HomeTeam!.Name,
-                    g.AwayTeamId,
-                    g.AwayTeam!.Name,
-                    g.HomeScore,
-                    g.AwayScore
-                ))
+                .ToDto()
                 .ToListAsync();
             return Ok(games);
         }
@@ -41,18 +31,7 @@ namespace NBAStatisticsProject.Controllers
         {
             var game = await _context.Games
                 .Where(g => g.Id == id)
-                .Select(g => new GameDto
-                (
-                    g.Id,
-                    g.Date,
-                    g.Season,
-                    g.HomeTeamId,
-                    g.HomeTeam!.Name,
-                    g.AwayTeamId,
-                    g.AwayTeam!.Name,
-                    g.HomeScore,
-                    g.AwayScore
-                ))
+                .ToDto()
                 .FirstOrDefaultAsync();
             if (game == null)
                 return NotFound();
@@ -75,16 +54,7 @@ namespace NBAStatisticsProject.Controllers
             await _context.SaveChangesAsync();
             var created = await _context.Games
                  .Where(g => g.Id == game.Id)
-                 .Select(g => new GameDto(
-                     g.Id, 
-                     g.Date, 
-                     g.Season, 
-                     g.HomeTeamId,
-                     g.HomeTeam!.Name, 
-                     g.AwayTeamId, 
-                     g.AwayTeam!.Name, 
-                     g.HomeScore, 
-                     g.AwayScore))
+                 .ToDto()
                  .FirstAsync();
 
             return CreatedAtAction(nameof(GetGameById), new { id = game.Id }, created);
@@ -109,8 +79,8 @@ namespace NBAStatisticsProject.Controllers
 
             var createdGames = await _context.Games
                 .Where(g => ids.Contains(g.Id))
-                .Select(g => new GameDto(g.Id, g.Date, g.Season, g.HomeTeamId,
-        g.HomeTeam!.Name, g.AwayTeamId, g.AwayTeam!.Name, g.HomeScore, g.AwayScore)).ToListAsync();
+                .ToDto()
+                .ToListAsync();
             return Ok(createdGames);
         }
 
@@ -129,8 +99,7 @@ namespace NBAStatisticsProject.Controllers
             await _context.SaveChangesAsync();
             var updatedGameDto = await _context.Games
                 .Where(g => g.Id == id)
-                .Select(g => new GameDto(g.Id, g.Date, g.Season, g.HomeTeamId,
-                    g.HomeTeam!.Name, g.AwayTeamId, g.AwayTeam!.Name, g.HomeScore, g.AwayScore))
+                .ToDto()
                 .FirstOrDefaultAsync();
 
             return Ok(updatedGameDto);

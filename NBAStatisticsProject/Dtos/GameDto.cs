@@ -1,5 +1,5 @@
 ﻿
-namespace NBAStatisticsProject.Dtos
+namespace NBAStatisticsProject.DTOs
 {
     public record GameDto(
         int Id,
