@@ -19,14 +19,20 @@ namespace NBAStatisticsProject.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTeams()
+        public async Task<IActionResult> GetAllTeams([FromQuery] bool includeInactive = false)
         {
-            var teams = await _context.Teams
+            var query = _context.Teams.AsQueryable();
+
+            if(!includeInactive)            
+                query = query.Where(t => t.IsActive);
+            
+            var teams = await query
                 .Select(t => new TeamDto
                 (
                     t.Id,
                     t.Name,
-                    t.City
+                    t.City,
+                    t.IsActive
                 ))
                 .ToListAsync();
             return Ok(teams);
@@ -41,7 +47,8 @@ namespace NBAStatisticsProject.Controllers
                 (
                     t.Id,
                     t.Name,
-                    t.City
+                    t.City,
+                    t.IsActive
                 ))
                 .FirstOrDefaultAsync();
             if (team == null)
@@ -59,7 +66,7 @@ namespace NBAStatisticsProject.Controllers
             };
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
-            var createdTeamDto = new TeamDto(team.Id, team.Name, team.City);
+            var createdTeamDto = new TeamDto(team.Id, team.Name, team.City, team.IsActive);
             return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, createdTeamDto);
         }
 
@@ -69,13 +76,13 @@ namespace NBAStatisticsProject.Controllers
             var teams = teamDtos.Select(teamDto => new Team
             {
                 Name = teamDto.Name,
-                City = teamDto.City
+                City = teamDto.City,
             }).ToList();
             _context.Teams.AddRange(teams);
             await _context.SaveChangesAsync();
 
             var createdTeams = teams
-                .Select(t => new TeamDto(t.Id, t.Name, t.City))
+                .Select(t => new TeamDto(t.Id, t.Name, t.City, t.IsActive))
                 .ToList();
 
             return Ok(createdTeams);
@@ -91,7 +98,7 @@ namespace NBAStatisticsProject.Controllers
             existingTeam.Name = teamCreateDto.Name;
             existingTeam.City = teamCreateDto.City;
             await _context.SaveChangesAsync();
-            var updatedTeamDto = new TeamDto(existingTeam.Id, existingTeam.Name, existingTeam.City);
+            var updatedTeamDto = new TeamDto(existingTeam.Id, existingTeam.Name, existingTeam.City, existingTeam.IsActive);
             return Ok(updatedTeamDto);
         }
 
@@ -101,7 +108,7 @@ namespace NBAStatisticsProject.Controllers
             var team = await _context.Teams.FindAsync(id);
             if (team == null)
                 return NotFound();
-            _context.Teams.Remove(team);
+            team.IsActive = false;
             await _context.SaveChangesAsync();
             return NoContent();
         }
