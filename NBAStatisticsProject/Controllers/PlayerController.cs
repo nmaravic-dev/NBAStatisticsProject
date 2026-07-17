@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
+using NBAStatisticsProject.Dtos;
 using NBAStatisticsProject.Models;
 
 namespace NBAStatisticsProject.Controllers
@@ -19,13 +20,32 @@ namespace NBAStatisticsProject.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllPlayers()
         {
-            var players = await _context.Players.ToListAsync();
+            var players = await _context.Players
+                .Select(p => new PlayerDto
+                (
+                    p.Id,
+                    p.Name,
+                    p.Position,
+                    p.TeamId,
+                    p.Team!.Name
+                ))
+                .ToListAsync();
             return Ok(players);
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPlayersById(int id)
         {
-            var player = await _context.Players.FindAsync(id);
+            var player = await _context.Players
+                .Where(p => p.Id == id)
+                .Select(p => new PlayerDto
+                (
+                    p.Id,
+                    p.Name,
+                    p.Position,
+                    p.TeamId,
+                    p.Team!.Name
+                ))
+                .FirstOrDefaultAsync();
             if (player == null)
                 return NotFound();
             return Ok(player);
@@ -34,7 +54,17 @@ namespace NBAStatisticsProject.Controllers
         [HttpGet("team/{teamId}")]
         public async Task<IActionResult> GetPlayersByTeam(int teamId)
         {
-            var playersFromSameTeam = await _context.Players.Where(p => p.TeamId == teamId).ToListAsync();
+            var playersFromSameTeam = await _context.Players
+                .Where(p => p.TeamId == teamId)
+                .Select(p => new PlayerDto
+                (
+                    p.Id,
+                    p.Name,
+                    p.Position,
+                    p.TeamId,
+                    p.Team!.Name
+                ))
+                .ToListAsync();
             return Ok(playersFromSameTeam);
         }
 
@@ -46,48 +76,79 @@ namespace NBAStatisticsProject.Controllers
             return Ok(playersCount);
         }
         [HttpPost]
-        public async Task<IActionResult> AddPlayer(Player player)
+        public async Task<IActionResult> AddPlayer(PlayerCreateDto playerDto)
         {
+            var player = new Player
+            {
+                Name = playerDto.Name,
+                Position = playerDto.Position,
+                TeamId = playerDto.TeamId
+            };
             _context.Players.Add(player);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetPlayersById), new { id = player.Id }, player);
+            var createdPlayerDto = await _context.Players
+                .Where(p => p.Id == player.Id)
+                .Select(p => new PlayerDto
+                (
+                    p.Id,
+                    p.Name,
+                    p.Position,
+                    p.TeamId,
+                    p.Team!.Name
+                )).FirstAsync();
+            return CreatedAtAction(nameof(GetPlayersById), new { id = player.Id }, createdPlayerDto);
         }
         [HttpPost("bulk")]
-        public async Task<IActionResult> AddPlayers(List<Player> players)
+        public async Task<IActionResult> AddPlayers(List<PlayerCreateDto> playerDtos)
         {
-            _context.Players.AddRange(players);   
+            var players = playerDtos.Select(playerDto => new Player
+            {
+                Name = playerDto.Name,
+                Position = playerDto.Position,
+                TeamId = playerDto.TeamId
+            }).ToList();
+
+            _context.Players.AddRange(players);
             await _context.SaveChangesAsync();
-            return Ok(players);
+            var ids = players.Select(p => p.Id).ToList();
+
+            var createdPlayers = await _context.Players
+                .Where(p => ids.Contains(p.Id))
+                .Select(p => new PlayerDto
+                (
+                    p.Id,
+                    p.Name,
+                    p.Position,
+                    p.TeamId,
+                    p.Team!.Name
+                )).ToListAsync();
+            return Ok(createdPlayers);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ChangePlayersStats(int id, [FromBody] Player updatedPlayer)
+        public async Task<IActionResult> ChangePlayersStats(int id, PlayerCreateDto playerCreateDto)
         {
             var existingPlayer = await _context.Players.FindAsync(id);
             if (existingPlayer == null)
                 return NotFound();
 
-            existingPlayer.Name = updatedPlayer.Name;
-            existingPlayer.Position = updatedPlayer.Position;
-            existingPlayer.TeamId = updatedPlayer.TeamId;
+            existingPlayer.Name = playerCreateDto.Name;
+            existingPlayer.Position = playerCreateDto.Position;
+            existingPlayer.TeamId = playerCreateDto.TeamId;
 
             await _context.SaveChangesAsync();
-            return Ok(existingPlayer);
-
-        }
-
-        [HttpPatch("{id}")]
-
-        public async Task<IActionResult> ChangeIndividualStat(int id, [FromBody] JsonPatchDocument<Player> patchDoc)
-        {
-            var player = await _context.Players.FindAsync(id);
-            if (player == null) return NotFound();
-
-            patchDoc.ApplyTo(player, ModelState);
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            await _context.SaveChangesAsync();
-            return Ok(player);
+            var updatedPlayerDto = await _context.Players
+                .Where(p => p.Id == id)
+                .Select(p => new PlayerDto
+                (
+                    p.Id,
+                    p.Name,
+                    p.Position,
+                    p.TeamId,
+                    p.Team!.Name
+                ))
+                .FirstOrDefaultAsync();
+            return Ok(updatedPlayerDto);
         }
 
         [HttpDelete("{id}")]
@@ -99,7 +160,7 @@ namespace NBAStatisticsProject.Controllers
                 return NotFound();
             _context.Players.Remove(player);
             await _context.SaveChangesAsync();
-            return Ok(player);
+            return NoContent();
         }
     }
 }
