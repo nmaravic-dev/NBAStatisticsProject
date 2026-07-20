@@ -1,6 +1,7 @@
-using Scalar.AspNetCore;using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
-
+using NBAStatisticsProject.Services;
+using Scalar.AspNetCore;
 namespace NBAStatisticsProject
 {
     public class Program
@@ -16,6 +17,11 @@ namespace NBAStatisticsProject
             builder.Services.AddOpenApi();
             builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddScoped<ITeamService, TeamService>();
+            builder.Services.AddScoped<IPlayerService, PlayerService>();
+            builder.Services.AddScoped<IGameService, GameService>();
+            builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+            builder.Services.AddScoped<IPlayerGameStatService, PlayerGameStatService>();
 
             var app = builder.Build();
 
