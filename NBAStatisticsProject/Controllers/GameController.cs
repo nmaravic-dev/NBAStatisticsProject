@@ -30,6 +30,8 @@ namespace NBAStatisticsProject.Controllers
         public async Task<IActionResult> AddGame(GameCreateDto gameDto)
         {
             var createdGame = await _service.CreateAsync(gameDto);
+            if (createdGame == null)
+                return BadRequest("Invalid game data: check team IDs, date, or duplicate teams.");
             return CreatedAtAction(nameof(GetGameById), new { id = createdGame.Id }, createdGame);
         }
         [HttpPost("bulk")]

@@ -25,8 +25,18 @@ namespace NBAStatisticsProject.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<GameDto> CreateAsync(GameCreateDto dto)
+        public async Task<GameDto?> CreateAsync(GameCreateDto dto)
         {
+            if (dto.Date > DateTime.UtcNow)
+                return null;
+            if (dto.HomeTeamId == dto.AwayTeamId)
+                return null;
+            var teamIds = new[] { dto.HomeTeamId, dto.AwayTeamId };
+            var existingCount = await _context.Teams
+                .CountAsync(t => teamIds.Contains(t.Id));
+            if (existingCount != 2)
+                return null;
+
             var game = new Game
             {
                 Date = dto.Date,
@@ -66,6 +76,17 @@ namespace NBAStatisticsProject.Services
 
         public async Task<GameDto?> UpdateAsync(int id, GameCreateDto dto)
         {
+            if (dto.Date > DateTime.UtcNow)
+                return null;
+            if (dto.HomeTeamId == dto.AwayTeamId)
+                return null;
+
+            var teamIds = new[] { dto.HomeTeamId, dto.AwayTeamId };
+            var existingCount = await _context.Teams
+                .CountAsync(t => teamIds.Contains(t.Id));
+            if (existingCount != 2)
+                return null;
+
             var game = await _context.Games.FindAsync(id);
             if (game == null) return null;
             game.Date = dto.Date;
