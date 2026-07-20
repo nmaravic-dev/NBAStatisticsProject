@@ -44,12 +44,16 @@ namespace NBAStatisticsProject.Controllers
         public async Task<IActionResult> AddPlayer(PlayerCreateDto playerDto)
         {
             var createdPlayer = await _service.CreateAsync(playerDto);
+            if (createdPlayer == null)
+                return BadRequest($"Team {playerDto.TeamId} does not exist");
             return CreatedAtAction(nameof(GetPlayersById), new { id = createdPlayer.Id }, createdPlayer);
         }
         [HttpPost("bulk")]
         public async Task<IActionResult> AddPlayers(List<PlayerCreateDto> playerDtos)
         {
             var createdPlayers = await _service.CreateManyAsync(playerDtos);
+            if (createdPlayers == null)
+                return BadRequest("One or more teams do not exist");
             return Ok(createdPlayers);
         }
 

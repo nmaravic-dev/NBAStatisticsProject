@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+
 namespace NBAStatisticsProject.DTOs
 {
     public record GameDto(
@@ -14,10 +16,15 @@ namespace NBAStatisticsProject.DTOs
 
     public record GameCreateDto(
         DateTime Date,
+        [Required][StringLength(10)]
         string Season,
+        [Range(1, int.MaxValue)]
         int HomeTeamId,
+        [Range(1, int.MaxValue)]
         int AwayTeamId,
+        [Range(0, int.MaxValue)]
         int HomeScore,
+        [Range(0, int.MaxValue)]
         int AwayScore);
 }
 

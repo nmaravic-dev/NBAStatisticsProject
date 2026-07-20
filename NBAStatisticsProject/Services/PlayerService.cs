@@ -36,8 +36,11 @@ namespace NBAStatisticsProject.Services
         }
         public async Task<int> GetCountAsync() => await _context.Players.CountAsync();
 
-        public async Task<PlayerDto> CreateAsync(PlayerCreateDto dto)
+        public async Task<PlayerDto?> CreateAsync(PlayerCreateDto dto)
         {
+            if (!await _context.Teams.AnyAsync(t => t.Id == dto.TeamId))
+                return null;
+
             var player = new Player
             {
                 Name = dto.Name,

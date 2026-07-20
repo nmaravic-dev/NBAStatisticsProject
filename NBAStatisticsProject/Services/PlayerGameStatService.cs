@@ -26,8 +26,14 @@ namespace NBAStatisticsProject.Services
                 .ToDto()
                 .FirstOrDefaultAsync();
         }
-        public async Task<PlayerGameStatDto> CreateAsync(PlayerGameStatCreateDto dto)
+        public async Task<PlayerGameStatDto?> CreateAsync(PlayerGameStatCreateDto dto)
         {
+            if (!await _context.Players.AnyAsync(p => p.Id == dto.PlayerId))
+                return null;
+
+            if (!await _context.Games.AnyAsync(g => g.Id == dto.GameId))
+                return null;
+
             var playerGameStat = new PlayerGameStat()
             {
                 PlayerId = dto.PlayerId,
@@ -73,6 +79,12 @@ namespace NBAStatisticsProject.Services
         }
         public async Task<PlayerGameStatDto?> UpdateAsync(int id, PlayerGameStatCreateDto dto)
         {
+            if (!await _context.Players.AnyAsync(p => p.Id == dto.PlayerId))
+                return null;
+
+            if (!await _context.Games.AnyAsync(g => g.Id == dto.GameId))
+                return null;
+
             var existingPlayerGameStat = await _context.PlayerGameStats.FindAsync(id);
             if (existingPlayerGameStat == null) return null;
 

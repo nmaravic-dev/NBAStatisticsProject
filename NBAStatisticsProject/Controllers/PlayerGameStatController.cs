@@ -31,6 +31,8 @@ namespace NBAStatisticsProject.Controllers
         public async Task<IActionResult> AddPlayerGameStat(PlayerGameStatCreateDto playerGameStatCreateDto)
         {
             var createdPlayerGameStat = await _service.CreateAsync(playerGameStatCreateDto);
+            if (createdPlayerGameStat == null)
+                return BadRequest("Invalid player or game ID.");
             return CreatedAtAction(nameof(GetPlayerGameStatById), new { id = createdPlayerGameStat.Id }, createdPlayerGameStat);
         }
         [HttpPost("bulk")]
@@ -44,6 +46,8 @@ namespace NBAStatisticsProject.Controllers
         public async Task<IActionResult> UpdatePlayerGameStat(int id, PlayerGameStatCreateDto playerGameStatCreateDto)
         {
             var updatedPlayerGameStat = await _service.UpdateAsync(id, playerGameStatCreateDto);
+            if (updatedPlayerGameStat == null)
+                return BadRequest("Invalid player or game ID.");
             return Ok(updatedPlayerGameStat);
         }
 
