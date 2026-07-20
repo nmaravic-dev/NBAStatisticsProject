@@ -42,9 +42,9 @@ namespace NBAStatisticsProject.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateGame(int id, GameCreateDto gameCreateDto)
+        public async Task<IActionResult> UpdateGame(int id, GameCreateDto gameDto)
         {
-            var updatedGame = await _service.UpdateAsync(id, gameCreateDto);
+            var updatedGame = await _service.UpdateAsync(id, gameDto);
             if (updatedGame == null)
                 return NotFound();
             return Ok(updatedGame);

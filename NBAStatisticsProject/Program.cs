@@ -22,6 +22,7 @@ namespace NBAStatisticsProject
             builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
             builder.Services.AddScoped<IPlayerGameStatService, PlayerGameStatService>();
+            builder.Services.AddScoped<IInjuryService, InjuryService>();
 
             var app = builder.Build();
 

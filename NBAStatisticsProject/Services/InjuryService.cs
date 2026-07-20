@@ -70,7 +70,7 @@ namespace NBAStatisticsProject.Services
                 .ToListAsync();
         }
 
-        public async Task<InjuryDto?> UpdateAsync(int id, InjuryDto dto)
+        public async Task<InjuryDto?> UpdateAsync(int id, InjuryCreateDto dto)
         {
             if (!await _context.Players.AnyAsync(p => p.Id == dto.PlayerId))
                 return null;

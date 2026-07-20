@@ -8,7 +8,7 @@ namespace NBAStatisticsProject.Services
         Task<InjuryDto?> GetByIdAsync(int id);
         Task<InjuryDto?> CreateAsync(InjuryCreateDto dto);
         Task<List<InjuryDto>> CreateManyAsync(List<InjuryCreateDto> dtos);
-        Task<InjuryDto?> UpdateAsync(int id, InjuryDto dto);
+        Task<InjuryDto?> UpdateAsync(int id, InjuryCreateDto dto);
         Task<bool> DeleteAsync(int id);
     }
 }
