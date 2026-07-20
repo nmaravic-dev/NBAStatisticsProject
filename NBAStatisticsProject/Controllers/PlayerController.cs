@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NBAStatisticsProject.Data;
 using NBAStatisticsProject.DTOs;
-using NBAStatisticsProject.Models;
-using NBAStatisticsProject.Mapping;
+using NBAStatisticsProject.Services;
 
 namespace NBAStatisticsProject.Controllers
 {
@@ -11,27 +8,19 @@ namespace NBAStatisticsProject.Controllers
     [Route("api/[controller]")]
     public class PlayerController : ControllerBase
     {
-        private readonly DataContext _context;
-        public PlayerController(DataContext context)
-        {
-            _context = context;
-        }
+        private readonly IPlayerService _service;
+        public PlayerController(IPlayerService service) => _service = service;
 
         [HttpGet]
         public async Task<IActionResult> GetAllPlayers()
         {
-            var players = await _context.Players
-                .ToDto()
-                .ToListAsync();
+            var players = await _service.GetAllAsync();
             return Ok(players);
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPlayersById(int id)
         {
-            var player = await _context.Players
-                .Where(p => p.Id == id)
-                .ToDto()
-                .FirstOrDefaultAsync();
+            var player = await _service.GetByIdAsync(id);
             if (player == null)
                 return NotFound();
             return Ok(player);
@@ -40,10 +29,7 @@ namespace NBAStatisticsProject.Controllers
         [HttpGet("team/{teamId}")]
         public async Task<IActionResult> GetPlayersByTeam(int teamId)
         {
-            var playersFromSameTeam = await _context.Players
-                .Where(p => p.TeamId == teamId)
-                .ToDto()
-                .ToListAsync();
+            var playersFromSameTeam = await _service.GetPlayersByTeamAsync(teamId);
             return Ok(playersFromSameTeam);
         }
 
@@ -51,75 +37,38 @@ namespace NBAStatisticsProject.Controllers
 
         public async Task<IActionResult> NumberOfPlayers()
         {
-            var playersCount = await _context.Players.CountAsync();
+            var playersCount = await _service.GetCountAsync();
             return Ok(playersCount);
         }
         [HttpPost]
         public async Task<IActionResult> AddPlayer(PlayerCreateDto playerDto)
         {
-            var player = new Player
-            {
-                Name = playerDto.Name,
-                Position = playerDto.Position,
-                TeamId = playerDto.TeamId
-            };
-            _context.Players.Add(player);
-            await _context.SaveChangesAsync();
-            var createdPlayerDto = await _context.Players
-                .Where(p => p.Id == player.Id)
-                .ToDto()
-                .FirstAsync();
-            return CreatedAtAction(nameof(GetPlayersById), new { id = player.Id }, createdPlayerDto);
+            var createdPlayer = await _service.CreateAsync(playerDto);
+            return CreatedAtAction(nameof(GetPlayersById), new { id = createdPlayer.Id }, createdPlayer);
         }
         [HttpPost("bulk")]
         public async Task<IActionResult> AddPlayers(List<PlayerCreateDto> playerDtos)
         {
-            var players = playerDtos.Select(playerDto => new Player
-            {
-                Name = playerDto.Name,
-                Position = playerDto.Position,
-                TeamId = playerDto.TeamId
-            }).ToList();
-
-            _context.Players.AddRange(players);
-            await _context.SaveChangesAsync();
-            var ids = players.Select(p => p.Id).ToList();
-
-            var createdPlayers = await _context.Players
-                .Where(p => ids.Contains(p.Id))
-                .ToDto()
-                .ToListAsync();
+            var createdPlayers = await _service.CreateManyAsync(playerDtos);
             return Ok(createdPlayers);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePlayer(int id, PlayerCreateDto playerCreateDto)
         {
-            var existingPlayer = await _context.Players.FindAsync(id);
-            if (existingPlayer == null)
+            var updatedPlayer = await _service.UpdateAsync(id, playerCreateDto);
+            if (updatedPlayer == null)
                 return NotFound();
-
-            existingPlayer.Name = playerCreateDto.Name;
-            existingPlayer.Position = playerCreateDto.Position;
-            existingPlayer.TeamId = playerCreateDto.TeamId;
-
-            await _context.SaveChangesAsync();
-            var updatedPlayerDto = await _context.Players
-                .Where(p => p.Id == id)
-                .ToDto()
-                .FirstOrDefaultAsync();
-            return Ok(updatedPlayerDto);
+            return Ok(updatedPlayer);
         }
 
         [HttpDelete("{id}")]
 
         public async Task<IActionResult> DeletePlayer(int id)
         {
-            var player = await _context.Players.FindAsync(id);
-            if (player == null)
+            var result = await _service.DeleteAsync(id);
+            if (!result)
                 return NotFound();
-            _context.Players.Remove(player);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

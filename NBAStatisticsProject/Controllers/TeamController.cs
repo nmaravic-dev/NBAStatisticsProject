@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NBAStatisticsProject.Data;
 using NBAStatisticsProject.DTOs;
-using NBAStatisticsProject.Models;
-using NBAStatisticsProject.Mapping;
+using NBAStatisticsProject.Services;
 
 namespace NBAStatisticsProject.Controllers
 {
@@ -11,35 +8,23 @@ namespace NBAStatisticsProject.Controllers
     [Route("api/[controller]")]
     public class TeamController : ControllerBase
     {
-        
-        private readonly DataContext _context;
-        public TeamController(DataContext context) 
-        {
-            _context = context;
-        }
+
+        private readonly ITeamService _service;
+        public TeamController(ITeamService service) => _service = service;
 
 
         [HttpGet]
         public async Task<IActionResult> GetAllTeams([FromQuery] bool includeInactive = false)
         {
-            var query = _context.Teams.AsQueryable();
-
-            if(!includeInactive)            
-                query = query.Where(t => t.IsActive);
-            
-            var teams = await query
-                .ToDto()
-                .ToListAsync();
+            var teams = await _service.GetAllAsync(includeInactive);
             return Ok(teams);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTeamById(int id)
         {
-            var team = await _context.Teams
-                .Where(t => t.Id == id)
-                .ToDto()
-                .FirstOrDefaultAsync();
+            var team = await _service.GetByIdAsync(id);
+
             if (team == null)
                 return NotFound();
             return Ok(team);
@@ -48,57 +33,32 @@ namespace NBAStatisticsProject.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTeam(TeamCreateDto teamDto)
         {
-            var team = new Team
-            {
-                Name = teamDto.Name,
-                City = teamDto.City
-            };
-            _context.Teams.Add(team);
-            await _context.SaveChangesAsync();
-            var createdTeamDto = team.ToDto();
-            return CreatedAtAction(nameof(GetTeamById), new { id = team.Id }, createdTeamDto);
+            var createdTeamDto = await _service.CreateAsync(teamDto);
+            return CreatedAtAction(nameof(GetTeamById), new { id = createdTeamDto.Id }, createdTeamDto);
         }
 
         [HttpPost("bulk")]
         public async Task<IActionResult> AddTeams(List<TeamCreateDto> teamDtos)
         {
-            var teams = teamDtos.Select(teamDto => new Team
-            {
-                Name = teamDto.Name,
-                City = teamDto.City,
-            }).ToList();
-            _context.Teams.AddRange(teams);
-            await _context.SaveChangesAsync();
-
-            var createdTeams = teams
-                .Select(t => t.ToDto())
-                .ToList();
-
+            var createdTeams = await _service.CreateManyAsync(teamDtos);
             return Ok(createdTeams);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTeam(int id, TeamCreateDto teamCreateDto)
         {
-            var existingTeam = await _context.Teams.FindAsync(id);
-            if(existingTeam == null)
+            var updatedTeamDto = await _service.UpdateAsync(id, teamCreateDto);
+            if (updatedTeamDto == null)
                 return NotFound();
-
-            existingTeam.Name = teamCreateDto.Name;
-            existingTeam.City = teamCreateDto.City;
-            await _context.SaveChangesAsync();
-            var updatedTeamDto = existingTeam.ToDto();
             return Ok(updatedTeamDto);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTeam(int id)
         {
-            var team = await _context.Teams.FindAsync(id);
-            if (team == null)
+            var deleted = await _service.DeleteAsync(id);
+            if (!deleted)
                 return NotFound();
-            team.IsActive = false;
-            await _context.SaveChangesAsync();
             return NoContent();
         }
     }
