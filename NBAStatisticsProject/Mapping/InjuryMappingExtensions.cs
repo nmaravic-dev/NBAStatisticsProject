@@ -12,7 +12,8 @@ namespace NBAStatisticsProject.Mapping
                 i.PlayerId,
                 i.StartDate,
                 i.EndDate,
-                i.Severity,
+                (int)i.Severity,
+                i.Severity.ToString(),
                 i.Description
             ));
         }   

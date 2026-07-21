@@ -6,10 +6,9 @@ using NBAStatisticsProject.Models;
 
 namespace NBAStatisticsProject.Services
 {
-    public class InjuryService : IInjuryService
+    public class InjuryService(DataContext context) : IInjuryService
     {
-        private readonly DataContext _context;
-        public InjuryService(DataContext context) => _context = context;
+        private readonly DataContext _context = context;
 
         public async Task<List<InjuryDto>> GetAllAsync()
         {
@@ -29,6 +28,9 @@ namespace NBAStatisticsProject.Services
         public async Task<InjuryDto?> CreateAsync(InjuryCreateDto dto)
         {
             if (!await _context.Players.AnyAsync(p => p.Id == dto.PlayerId))
+                return null;
+
+            if (dto.StartDate > DateTime.UtcNow)
                 return null;
 
             if (dto.EndDate.HasValue && dto.EndDate < dto.StartDate)
@@ -73,6 +75,9 @@ namespace NBAStatisticsProject.Services
         public async Task<InjuryDto?> UpdateAsync(int id, InjuryCreateDto dto)
         {
             if (!await _context.Players.AnyAsync(p => p.Id == dto.PlayerId))
+                return null;
+            
+            if (dto.StartDate > DateTime.UtcNow)
                 return null;
 
             if (dto.EndDate.HasValue && dto.EndDate < dto.StartDate)

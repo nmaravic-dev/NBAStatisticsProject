@@ -6,10 +6,9 @@ using NBAStatisticsProject.Models;
 
 namespace NBAStatisticsProject.Services
 {
-    public class GameService : IGameService
+    public class GameService(DataContext context) : IGameService
     {
-        private readonly DataContext _context;
-        public GameService(DataContext context) => _context = context;
+        private readonly DataContext _context = context;
 
         public async Task<List<GameDto>> GetAllAsync()
         {

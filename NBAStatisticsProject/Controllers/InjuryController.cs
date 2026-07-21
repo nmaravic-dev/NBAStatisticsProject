@@ -6,10 +6,10 @@ namespace NBAStatisticsProject.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class InjuryController : ControllerBase
+    public class InjuryController(IInjuryService service) : ControllerBase
     {
-        private readonly IInjuryService _service;
-        public InjuryController(IInjuryService service) => _service = service;
+        private readonly IInjuryService _service = service;
+
         [HttpGet]
         public async Task<IActionResult> GetAllInjuries()
         {
