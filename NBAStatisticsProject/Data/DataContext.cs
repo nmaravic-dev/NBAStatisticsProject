@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace NBAStatisticsProject.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<AppUser>
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 

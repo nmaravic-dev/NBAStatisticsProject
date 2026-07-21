@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NBAStatisticsProject.DTOs;
 using NBAStatisticsProject.Services;
 
@@ -11,6 +12,7 @@ namespace NBAStatisticsProject.Controllers
         private readonly IPlayerService _service;
         public PlayerController(IPlayerService service) => _service = service;
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllPlayers()
         {
