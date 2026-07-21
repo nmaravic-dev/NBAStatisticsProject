@@ -12,7 +12,6 @@ namespace NBAStatisticsProject.Controllers
         private readonly IPlayerService _service;
         public PlayerController(IPlayerService service) => _service = service;
 
-        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllPlayers()
         {

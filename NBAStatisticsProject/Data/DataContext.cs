@@ -13,6 +13,7 @@ namespace NBAStatisticsProject.Data
         public DbSet<Game> Games { get; set; }
         public DbSet<PlayerGameStat> PlayerGameStats { get; set; }
         public DbSet<Injury> Injuries { get; set; }
+        public DbSet<WatchlistEntry> WatchlistEntries { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
