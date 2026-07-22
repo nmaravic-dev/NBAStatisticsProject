@@ -4,6 +4,13 @@ REST API for tracking and analyzing NBA statistics — players, teams, games, pe
 
 **Live demo:** https://nbastatsmaravic.fly.dev/scalar/v1
 
+The database is seeded with sample teams, players, games, and injuries. To try the `[Authorize]`-protected endpoints (watchlist), register your own account via `POST /api/Auth/register`, or use the demo account:
+
+* Email: `demo@nbastats.com`
+* Password: `Demo123!`
+
+Copy the token from the login response into the `Authorization: Bearer <token>` header to access protected endpoints.
+
 ## Technologies
 
 * ASP.NET Core Web API (.NET 9)
