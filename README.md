@@ -1,19 +1,23 @@
+# NBAStatisticsProject
+
 REST API for tracking and analyzing NBA statistics — players, teams, games, per-game stats, injuries, and derived analytics.
 
-Status: Work in progress.
+**Live demo:** https://nbastatsmaravic.fly.dev/scalar/v1
 
 ## Technologies
 
 * ASP.NET Core Web API (.NET 9)
-* Entity Framework Core (code-first) + SQL Server (LocalDB)
+* Entity Framework Core (code-first) + PostgreSQL
 * ASP.NET Core Identity + JWT authentication
+* Docker (multi-stage build)
+* Deployed on Fly.io with a Neon PostgreSQL database
 * Scalar (OpenAPI UI)
 
 ## Architecture
 
 Layered: Controllers (HTTP) → Services (business logic) → EF Core (data access). Controllers depend on service interfaces, not on the DbContext — no data access leaks into the presentation layer.
 
-## Current
+## Features
 
 * Relational model: Team, Player, Game, PlayerGameStat, Injury
 * Full CRUD for all entities, plus bulk create
@@ -26,11 +30,14 @@ Layered: Controllers (HTTP) → Services (business logic) → EF Core (data acce
 * JWT authentication with Identity: register, login, [Authorize]-protected endpoints
 * Personal watchlist: authenticated users follow players; ownership scoped to the token, never the request
 
+## Deployment
+
+Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database is PostgreSQL hosted on Neon. Secrets (connection string, JWT key) are provided via environment variables, never committed. Migrations are applied automatically on startup. The app runs behind Fly's HTTPS proxy, with forwarded-header handling so OpenAPI reports the correct HTTPS server.
+
 ## Planned
 
 * Player comparison (head-to-head stats)
 * Data ingestion from external NBA API
-* Deployment (live instance)
 * Unit tests for the injury score logic
 
 ## Notes on decisions
@@ -39,4 +46,3 @@ Layered: Controllers (HTTP) → Services (business logic) → EF Core (data acce
 * Service layer over a repository — EF Core's DbSet already acts as a repository, so Controller → Service → DbContext stays clean without an extra abstraction.
 * No JsonPatch — it needed a separate mutable DTO and double mapping without adding anything over PUT.
 * Derived values (averages, injury score) are computed on read, not stored — the API keeps facts and derives the rest.
-* JWT key currently in appsettings for local dev — must move to user secrets / environment variables before deployment.
