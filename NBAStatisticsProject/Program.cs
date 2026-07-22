@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.HttpOverrides;
 using NBAStatisticsProject.Data;
 using NBAStatisticsProject.Models;
 using NBAStatisticsProject.Services;
@@ -47,9 +48,22 @@ namespace NBAStatisticsProject
                             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                     };
                 });
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
 
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedProto
+            });
             // Apply pending migrations on startup (creates tables on the production DB)
             using (var scope = app.Services.CreateScope())
             {
@@ -58,10 +72,9 @@ namespace NBAStatisticsProject
             }
             // Configure the HTTP request pipeline.
 
+            app.UseCors();
             app.MapOpenApi();
             app.MapScalarApiReference();
-
-            app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
