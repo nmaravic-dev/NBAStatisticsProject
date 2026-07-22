@@ -60,10 +60,14 @@ namespace NBAStatisticsProject
 
             var app = builder.Build();
 
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            var forwardedOptions = new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedProto
-            });
+            };
+            forwardedOptions.KnownNetworks.Clear();
+            forwardedOptions.KnownProxies.Clear();
+            app.UseForwardedHeaders(forwardedOptions);
+
             // Apply pending migrations on startup (creates tables on the production DB)
             using (var scope = app.Services.CreateScope())
             {
