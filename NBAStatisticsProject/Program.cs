@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NBAStatisticsProject.Data;
@@ -21,7 +20,7 @@ namespace NBAStatisticsProject
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IPlayerService, PlayerService>();
             builder.Services.AddScoped<IGameService, GameService>();
@@ -51,13 +50,16 @@ namespace NBAStatisticsProject
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            // Apply pending migrations on startup (creates tables on the production DB)
+            using (var scope = app.Services.CreateScope())
             {
-                app.MapOpenApi();
-
-                app.MapScalarApiReference();
+                var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+                db.Database.Migrate();
             }
+            // Configure the HTTP request pipeline.
+
+            app.MapOpenApi();
+            app.MapScalarApiReference();
 
             app.UseHttpsRedirection();
 
