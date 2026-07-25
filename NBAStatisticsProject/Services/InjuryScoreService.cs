@@ -27,12 +27,12 @@ namespace NBAStatisticsProject.Services
                     .CountAsync(g =>
                     (g.HomeTeamId == player.TeamId || g.AwayTeamId == player.TeamId)  
                     && g.Date >= i.StartDate                                          
-                    && g.Date <= (i.EndDate ?? DateTime.UtcNow));
+                    && g.Date <= (i.EndDate ?? DateTime.Now));
                 totalMissedGames += missed;
                 weightedMissedGames += missed * (int)i.Severity;
             }
 
-            int totalDaysInjured = injuries.Sum(i =>(int)((i.EndDate ?? DateTime.UtcNow) - i.StartDate).TotalDays);
+            int totalDaysInjured = injuries.Sum(i =>(int)((i.EndDate ?? DateTime.Now) - i.StartDate).TotalDays);
 
             var playedGames = await _context.PlayerGameStats
                 .CountAsync(pgs => pgs.PlayerId == playerId);
