@@ -13,7 +13,7 @@ namespace NBAStatisticsProject.Controllers
     {
         private readonly IWatchlistService _service;
         public WatchlistController(IWatchlistService service) => _service = service;
-
+        
         [HttpGet]
         public async Task<IActionResult> GetWatchlist ()
         {
