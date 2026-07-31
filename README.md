@@ -19,6 +19,7 @@ Copy the token from the login response into the `Authorization: Bearer <token>` 
 * Docker (multi-stage build)
 * Deployed on Fly.io with a Neon PostgreSQL database
 * Scalar (OpenAPI UI)
+* xUnit
 
 ## Architecture
 
@@ -36,6 +37,7 @@ Layered: Controllers (HTTP) → Services (business logic) → EF Core (data acce
 * Injury Susceptibility Score — a 1–10 availability rating derived from a player's injuries, weighting missed games by injury severity and overlapping injury periods with the team's schedule
 * JWT authentication with Identity: register, login, [Authorize]-protected endpoints
 * Personal watchlist: authenticated users follow players; ownership scoped to the token, never the request
+* Unit tests for the injury score service
 
 ## Deployment
 
