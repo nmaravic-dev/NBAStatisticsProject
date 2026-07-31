@@ -16,7 +16,7 @@ namespace NBAStatisticsProject.DTOs
 
     public record GameCreateDto(
         DateTime Date,
-        [Required][StringLength(10)]
+        [Required][StringLength(20)]
         string Season,
         [Range(1, int.MaxValue)]
         int HomeTeamId,
