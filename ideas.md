@@ -21,9 +21,6 @@
 ## Performance
 * InjuryScore GetAll: N+1 — loops per player, each call hits the DB separately. Optimize by loading all injuries/games/stats once and computing in memory.
 
-## Testing
-* Unit tests for the injury score logic (xUnit) — feed known injuries/games, assert the computed score. It's pure rule-based logic, so it's the easiest and most valuable thing to test first.
-
 ## Deployment & security
 * Fix CORS to a specific origin instead of AllowAnyOrigin once a frontend exists — currently open because it's a public demo API.
 * The dev JWT key was committed in early history — treat it as compromised. Production uses a separate key via Fly secrets. Consider scrubbing history (BFG) if it ever matters, though low priority for a portfolio.
