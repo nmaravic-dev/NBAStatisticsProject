@@ -23,7 +23,6 @@
 
 ## Deployment & security
 * Fix CORS to a specific origin instead of AllowAnyOrigin once a frontend exists — currently open because it's a public demo API.
-* The dev JWT key was committed in early history — treat it as compromised. Production uses a separate key via Fly secrets. Consider scrubbing history (BFG) if it ever matters, though low priority for a portfolio.
 * Add an appsettings.Development.example.json (placeholder values, committed) so the required config keys are documented without leaking secrets.
 * Bulk (CreateMany) endpoints are intentionally unvalidated — revisit once external API ingestion is built, since that will determine whether they stay or get replaced by a sync service.
 
