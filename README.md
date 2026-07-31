@@ -1,4 +1,4 @@
-# NBAStatisticsProject
+# NBA Statistics API
 
 REST API for tracking and analyzing NBA statistics — players, teams, games, per-game stats, injuries, and derived analytics.
 
@@ -34,10 +34,14 @@ Layered: Controllers (HTTP) → Services (business logic) → EF Core (data acce
 * Input validation: data annotations for format, service-level checks for business rules (FK existence, date sanity, no team playing itself)
 * Soft delete for teams: a team that has played games stays in the record
 * Per-player stats aggregation (games, totals, averages)
-* Injury Susceptibility Score — a 1–10 availability rating derived from a player's injuries, weighting missed games by injury severity and overlapping injury periods with the team's schedule
+* Injury Susceptibility Score — a 0–10 availability rating derived from a player's injuries, weighting missed games by injury severity and overlapping injury periods with the team's schedule
 * JWT authentication with Identity: register, login, [Authorize]-protected endpoints
 * Personal watchlist: authenticated users follow players; ownership scoped to the token, never the request
-* Unit tests for the injury score service
+
+## Testing
+
+* Unit tests implemented using **xUnit** and **EF Core In-Memory database**
+* Covers the Injury Susceptibility Score calculation — severity weighting via `[Theory]`, batch scoring across players, and edge cases (non-existent player, clean injury record, empty database). Players with no recorded games are not yet covered.
 
 ## Deployment
 
@@ -47,7 +51,6 @@ Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database
 
 * Player comparison (head-to-head stats)
 * Data ingestion from external NBA API
-* Unit tests for the injury score logic
 
 ## Notes on decisions
 
@@ -55,3 +58,5 @@ Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database
 * Service layer over a repository — EF Core's DbSet already acts as a repository, so Controller → Service → DbContext stays clean without an extra abstraction.
 * No JsonPatch — it needed a separate mutable DTO and double mapping without adding anything over PUT.
 * Derived values (averages, injury score) are computed on read, not stored — the API keeps facts and derives the rest.
+* **Secrets via environment variables** — the JWT key and connection string are injected as Fly.io secrets, never committed. An early development key does exist in Git history; it was rotated and is no longer valid. History was left intact rather than rewritten, since this is a portfolio repo and the key is dead.
+* Known limitation — injury score needs games to score against. Availability is a ratio of played to missed games, so a player with no recorded games has no meaningful basis for a score. Distinguishing "insufficient data" from "fully available" is tracked as a follow-up.
