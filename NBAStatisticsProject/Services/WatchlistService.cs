@@ -8,10 +8,7 @@ namespace NBAStatisticsProject.Services
     public class WatchlistService : IWatchlistService
     {
         private readonly DataContext _context;
-        public WatchlistService(DataContext context)
-        {
-            _context = context;
-        }
+        public WatchlistService(DataContext context) => _context = context;
         public async Task<List<WatchlistEntryDto>> GetAllAsync(string userId)
         {
             return await _context.WatchlistEntries

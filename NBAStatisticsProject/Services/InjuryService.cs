@@ -6,9 +6,11 @@ using NBAStatisticsProject.Models;
 
 namespace NBAStatisticsProject.Services
 {
-    public class InjuryService(DataContext context) : IInjuryService
+    public class InjuryService : IInjuryService
     {
-        private readonly DataContext _context = context;
+        private readonly DataContext _context;
+
+        public InjuryService(DataContext context) => _context = context;
 
         public async Task<List<InjuryDto>> GetAllAsync()
         {

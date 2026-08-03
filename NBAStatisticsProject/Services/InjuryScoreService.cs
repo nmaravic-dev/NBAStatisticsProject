@@ -1,19 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NBAStatisticsProject.Data;
 using NBAStatisticsProject.DTOs;
-using NBAStatisticsProject.Mapping;
-using NBAStatisticsProject.Models;
 
 namespace NBAStatisticsProject.Services
 {
     public class InjuryScoreService : IInjuryScoreService
     {
         private readonly DataContext _context;
-        public InjuryScoreService(DataContext context) => _context = context;
+        private readonly ILogger<InjuryScoreService> _logger;
+        public InjuryScoreService(DataContext context, ILogger<InjuryScoreService> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
         public async Task<InjuryScoreDto?> GetInjuryScoreAsync(int playerId)
         {
             var player = await _context.Players.FindAsync(playerId);
-            if (player == null) return null;
+            if (player == null)
+            {
+                _logger.LogWarning("Injury score requested for non-existent player {PlayerId}", playerId);
+                return null; 
+            }
             var injuries = await _context.Injuries
                 .Where(i => i.PlayerId == playerId)
                 .ToListAsync();
