@@ -48,11 +48,16 @@ namespace NBAStatisticsProject
                             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
                     };
                 });
+
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>() ?? [];
+
             builder.Services.AddCors(options =>
             {
-                options.AddDefaultPolicy(policy =>
+                options.AddPolicy("Frontend", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins(allowedOrigins)
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
@@ -76,7 +81,7 @@ namespace NBAStatisticsProject
             }
             // Configure the HTTP request pipeline.
 
-            app.UseCors();
+            app.UseCors("Frontend");
             app.MapOpenApi();
             app.MapScalarApiReference();
 
