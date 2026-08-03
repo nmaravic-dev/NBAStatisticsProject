@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using NBAStatisticsProject.Data;
 using NBAStatisticsProject.Models;
 using NBAStatisticsProject.Services;
@@ -17,7 +18,7 @@ namespace NBAStatisticsProject.Tests
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
             _context = new DataContext(options);
-            _service = new InjuryScoreService(_context);
+            _service = new InjuryScoreService(_context, NullLogger<InjuryScoreService>.Instance);
         }
         public void Dispose() => _context.Dispose();
 

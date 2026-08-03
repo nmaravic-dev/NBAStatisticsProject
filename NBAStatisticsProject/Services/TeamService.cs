@@ -9,10 +9,7 @@ namespace NBAStatisticsProject.Services
     public class TeamService : ITeamService
     {
         private readonly DataContext _context;
-        public TeamService(DataContext context)
-        {
-            _context = context;
-        }
+        public TeamService(DataContext context) => _context = context;
 
         public async Task<List<TeamDto>> GetAllAsync(bool includeInactive)
         {

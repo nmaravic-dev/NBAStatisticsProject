@@ -12,19 +12,29 @@ namespace NBAStatisticsProject.Services
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _config;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(UserManager<AppUser> userManager, IConfiguration config)
+        public AuthService(UserManager<AppUser> userManager, IConfiguration config, ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _config = config;
+            _logger = logger;
         }
         public async Task<AuthResponseDto?> LoginUserAsync(LoginDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null) return null;                 
+            if (user == null) 
+            {
+                _logger.LogWarning("Failed login for existing user {Email}", dto.Email);
+                return null; 
+            }                 
 
             var valid = await _userManager.CheckPasswordAsync(user, dto.Password);
-            if (!valid) return null;            
+            if (!valid || user == null) 
+            {
+                _logger.LogWarning("Failed login for existing user {Email}", dto.Email);
+                return null; 
+            }           
 
             var token = GenerateToken(user);
             return new AuthResponseDto(token, user.Email!);

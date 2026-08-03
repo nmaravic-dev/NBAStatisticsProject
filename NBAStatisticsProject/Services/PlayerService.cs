@@ -10,10 +10,7 @@ namespace NBAStatisticsProject.Services
     public class PlayerService : IPlayerService
     {
         private readonly DataContext _context;
-        public PlayerService(DataContext context)
-        {
-            _context = context;
-        }
+        public PlayerService(DataContext context) => _context = context;
 
         public async Task<List<PlayerDto>> GetAllAsync()
         {
