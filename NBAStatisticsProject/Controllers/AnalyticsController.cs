@@ -9,11 +9,12 @@ namespace NBAStatisticsProject.Controllers
     {
         private readonly IAnalyticsService _service;
         private readonly IInjuryScoreService _injuryScoreService;
-        public AnalyticsController(IAnalyticsService service, IInjuryScoreService injuryScoreService)
-
+        private readonly IPlayerComparisonService _playerComparisonService;
+        public AnalyticsController(IAnalyticsService service, IInjuryScoreService injuryScoreService, IPlayerComparisonService playerComparisonService)
         {
             _service = service;
             _injuryScoreService = injuryScoreService;
+            _playerComparisonService = playerComparisonService;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllPlayersSummary()
@@ -41,6 +42,15 @@ namespace NBAStatisticsProject.Controllers
             var score = await _injuryScoreService.GetInjuryScoreAsync(playerId);
             if (score == null) return NotFound();
             return Ok(score);
+        }
+
+        [HttpGet("compare")]
+        public async Task<IActionResult> ComparePlayers(int playerAId, int playerBId)
+        {
+            if (playerAId == playerBId) return BadRequest("Players must be different.");
+            var comparison = await _playerComparisonService.ComparePlayersAsync(playerAId, playerBId);
+            if (comparison == null) return NotFound();
+            return Ok(comparison);
         }
     }
 }

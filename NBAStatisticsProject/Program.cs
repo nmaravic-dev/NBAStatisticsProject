@@ -31,6 +31,7 @@ namespace NBAStatisticsProject
             builder.Services.AddScoped<IInjuryScoreService, InjuryScoreService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IWatchlistService, WatchlistService>();
+            builder.Services.AddScoped<IPlayerComparisonService, PlayerComparisonService>();
             builder.Services.AddIdentityCore<AppUser>()
                 .AddEntityFrameworkStores<DataContext>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
