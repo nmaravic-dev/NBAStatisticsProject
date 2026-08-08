@@ -28,12 +28,14 @@ namespace NBAStatisticsProject.Services
                 return new InjuryScoreDto(playerId, player.Name, 0, 0, 0, 10.0);
             int totalMissedGames = 0;
             int weightedMissedGames = 0;
+
+            var games = await _context.Games
+                .Where(g => g.HomeTeamId == player.TeamId || g.AwayTeamId == player.TeamId)
+                .Select(g => g.Date)
+                .ToListAsync();
             foreach (var i in injuries)
             {
-                var missed = await _context.Games
-                    .CountAsync(g =>
-                    (g.HomeTeamId == player.TeamId || g.AwayTeamId == player.TeamId)  
-                    && g.Date >= i.StartDate                                          
+                var missed = games.Count(g => g.Date >= i.StartDate                                       
                     && g.Date <= (i.EndDate ?? DateTime.Now));
                 totalMissedGames += missed;
                 weightedMissedGames += missed * (int)i.Severity;
