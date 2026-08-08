@@ -28,13 +28,15 @@ namespace NBAStatisticsProject.Services
                 return new InjuryScoreDto(playerId, player.Name, 0, 0, 0, 10.0);
             int totalMissedGames = 0;
             int weightedMissedGames = 0;
+
+            var gameDates = await _context.Games
+                .Where(g => g.HomeTeamId == player.TeamId || g.AwayTeamId == player.TeamId)
+                .Select(g => g.Date)
+                .ToListAsync();
             foreach (var i in injuries)
             {
-                var missed = await _context.Games
-                    .CountAsync(g =>
-                    (g.HomeTeamId == player.TeamId || g.AwayTeamId == player.TeamId)  
-                    && g.Date >= i.StartDate                                          
-                    && g.Date <= (i.EndDate ?? DateTime.Now));
+                var end = i.EndDate ?? DateTime.Now;
+                var missed = gameDates.Count(d => d >= i.StartDate && d <= end);
                 totalMissedGames += missed;
                 weightedMissedGames += missed * (int)i.Severity;
             }
@@ -44,15 +46,7 @@ namespace NBAStatisticsProject.Services
             var playedGames = await _context.PlayerGameStats
                 .CountAsync(pgs => pgs.PlayerId == playerId);
 
-            double score;
-
-            if (playedGames + weightedMissedGames == 0)
-                score = 10.0; 
-            else
-            {
-                double availability = (double)playedGames / (playedGames + weightedMissedGames);
-                score = Math.Round(availability * 10, 1);
-            }
+            double score = CalculateInjuryScore(playedGames, weightedMissedGames);
 
             return new InjuryScoreDto(
                 player.Id,
@@ -62,19 +56,80 @@ namespace NBAStatisticsProject.Services
                 totalMissedGames,
                 score
 
-            );
-            
+            );          
         }
+
         public async Task<List<InjuryScoreDto>> GetAllInjuryScoresAsync()
         {
-            var playerIds = await _context.Players.Select(p => p.Id).ToListAsync();
             var scores = new List<InjuryScoreDto>();
-            foreach (var id in playerIds)
+
+            var players = await _context.Players
+                .Select(p => new { p.Id, p.Name, p.TeamId })
+                .ToListAsync();
+
+            var injuries = await _context.Injuries.ToListAsync();
+
+            var games = await _context.Games
+                .Select(g => new { g.Date, g.HomeTeamId, g.AwayTeamId })
+                .ToListAsync();
+
+            var playedByPlayer = (await _context.PlayerGameStats
+                    .GroupBy(s => s.PlayerId)
+                    .Select(g => new { PlayerId = g.Key, Games = g.Count() })
+                    .ToListAsync())
+                .ToDictionary(x => x.PlayerId, x => x.Games);
+
+            var injuriesByPlayer = injuries.ToLookup(i => i.PlayerId);
+
+            var gameDatesByTeam = games
+                .SelectMany(g => new[]
+                {
+            new { TeamId = g.HomeTeamId, g.Date },
+            new { TeamId = g.AwayTeamId, g.Date }
+                })
+                .ToLookup(x => x.TeamId, x => x.Date);
+
+            foreach (var p in players)
             {
-                var score = await GetInjuryScoreAsync(id);
-                if (score != null) scores.Add(score);
+                var personalInjuries = injuriesByPlayer[p.Id];
+                if (!personalInjuries.Any())
+                {
+                    scores.Add(new InjuryScoreDto(p.Id, p.Name, 0, 0, 0, 10.0));
+                    continue;
+                }
+
+                var teamGameDates = gameDatesByTeam[p.TeamId];
+
+                int totalMissedGames = 0;
+                int weightedMissedGames = 0;
+
+                foreach (var i in personalInjuries)
+                {
+                    var end = i.EndDate ?? DateTime.Now;
+                    var missed = teamGameDates.Count(d => d >= i.StartDate && d <= end);
+                    totalMissedGames += missed;
+                    weightedMissedGames += missed * (int)i.Severity;
+                }
+
+                int totalDaysInjured = personalInjuries
+                    .Sum(i => (int)((i.EndDate ?? DateTime.Now) - i.StartDate).TotalDays);
+
+                int playedGames = playedByPlayer.GetValueOrDefault(p.Id, 0);
+
+                double score = CalculateInjuryScore(playedGames, weightedMissedGames);
+
+                scores.Add(new InjuryScoreDto(
+                    p.Id, p.Name, personalInjuries.Count(),
+                    totalDaysInjured, totalMissedGames, score));
             }
+
             return scores;
+        }
+        private static double CalculateInjuryScore(int playedGames, int weightedMissedGames)
+        {
+            if (playedGames + weightedMissedGames == 0) return 10.0;
+            double availability = (double)playedGames / (playedGames + weightedMissedGames);
+            return Math.Round(availability * 10, 1);
         }
 
     }
