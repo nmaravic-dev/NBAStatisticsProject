@@ -18,11 +18,7 @@
 * Data ingestion from an external NBA API — HttpClient-based sync service, an ExternalId on entities to map source records, rate limiting, and error handling for when the source is down. Largest and riskiest piece; would replace manual data entry and the bulk endpoints.
 * NBA betting predictions → multi-sport (long-term direction)
 
-## Performance
-* InjuryScore GetAll: N+1 — loops per player, each call hits the DB separately. Optimize by loading all injuries/games/stats once and computing in memory.
-
 ## Deployment & security
-* Fix CORS to a specific origin instead of AllowAnyOrigin once a frontend exists — currently open because it's a public demo API.
 * Add an appsettings.Development.example.json (placeholder values, committed) so the required config keys are documented without leaking secrets.
 * Bulk (CreateMany) endpoints are intentionally unvalidated — revisit once external API ingestion is built, since that will determine whether they stay or get replaced by a sync service.
 
