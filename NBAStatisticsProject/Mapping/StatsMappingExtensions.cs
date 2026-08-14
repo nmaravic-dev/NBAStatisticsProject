@@ -8,11 +8,11 @@ namespace NBAStatisticsProject.Mapping
         public static IQueryable<StatsSummaryDto> ToStatsSummaryDto(this IQueryable<PlayerGameStat> query)
         {
             return query
-                .GroupBy(s => new { s.PlayerId, s.Player!.Name })
+                .GroupBy(s => new { s.PlayerId, s.Player!.FirstName, s.Player!.LastName })
                 .Select(g => new StatsSummaryDto(
                     g.Key.PlayerId,
                     g.Count(),
-                    g.Key.Name,
+                    $"{g.Key.FirstName} {g.Key.LastName}",
                     g.Sum(s => s.Points),
                     g.Sum(s => s.Assists),
                     g.Sum(s => s.Rebounds),

@@ -10,7 +10,7 @@ namespace NBAStatisticsProject.Mapping
             return query.Select(pgs => new PlayerGameStatDto(
                 pgs.Id,
                 pgs.PlayerId,
-                pgs.Player!.Name,
+                $"{pgs.Player!.FirstName} {pgs.Player!.LastName}",
                 pgs.GameId,
                 pgs.Game!.Date,
                 pgs.Game.HomeTeam!.Name,

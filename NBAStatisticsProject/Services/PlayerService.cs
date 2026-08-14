@@ -40,7 +40,8 @@ namespace NBAStatisticsProject.Services
 
             var player = new Player
             {
-                Name = dto.Name,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
                 Position = dto.Position,
                 TeamId = dto.TeamId
             };
@@ -56,7 +57,8 @@ namespace NBAStatisticsProject.Services
         {
             var players = dtos.Select(dto => new Player
             {
-                Name = dto.Name,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
                 Position = dto.Position,
                 TeamId = dto.TeamId
             }).ToList();
@@ -73,7 +75,8 @@ namespace NBAStatisticsProject.Services
         {
             var player = await _context.Players.FindAsync(id);
             if (player == null) return null;
-            player.Name = dto.Name;
+            player.FirstName = dto.FirstName;
+            player.LastName = dto.LastName;
             player.Position = dto.Position;
             player.TeamId = dto.TeamId;
             await _context.SaveChangesAsync();
