@@ -25,7 +25,7 @@ namespace NBAStatisticsProject.Services
                 .Where(i => i.PlayerId == playerId)
                 .ToListAsync();
             if (injuries.Count == 0)
-                return new InjuryScoreDto(playerId, player.Name, 0, 0, 0, 10.0);
+                return new InjuryScoreDto(playerId, $"{player.FirstName} {player.LastName}", 0, 0, 0, 10.0);
             int totalMissedGames = 0;
             int weightedMissedGames = 0;
 
@@ -50,7 +50,7 @@ namespace NBAStatisticsProject.Services
 
             return new InjuryScoreDto(
                 player.Id,
-                player.Name,
+                $"{player.FirstName} {player.LastName}",
                 injuries.Count,
                 totalDaysInjured,
                 totalMissedGames,
@@ -64,7 +64,7 @@ namespace NBAStatisticsProject.Services
             var scores = new List<InjuryScoreDto>();
 
             var players = await _context.Players
-                .Select(p => new { p.Id, p.Name, p.TeamId })
+                .Select(p => new { p.Id, p.FirstName, p.LastName, p.TeamId })
                 .ToListAsync();
 
             var injuries = await _context.Injuries.ToListAsync();
@@ -94,7 +94,7 @@ namespace NBAStatisticsProject.Services
                 var personalInjuries = injuriesByPlayer[p.Id];
                 if (!personalInjuries.Any())
                 {
-                    scores.Add(new InjuryScoreDto(p.Id, p.Name, 0, 0, 0, 10.0));
+                    scores.Add(new InjuryScoreDto(p.Id, $"{p.FirstName} {p.LastName}", 0, 0, 0, 10.0));
                     continue;
                 }
 
@@ -119,7 +119,7 @@ namespace NBAStatisticsProject.Services
                 double score = CalculateInjuryScore(playedGames, weightedMissedGames);
 
                 scores.Add(new InjuryScoreDto(
-                    p.Id, p.Name, personalInjuries.Count(),
+                    p.Id, $"{p.FirstName} {p.LastName}", personalInjuries.Count(),
                     totalDaysInjured, totalMissedGames, score));
             }
 

@@ -25,7 +25,7 @@ namespace NBAStatisticsProject.Tests
         [Fact]
         public async Task GetInjuryScore_PlayerWithNoInjuries_Returns10()
         {
-            _context.Players.Add(new Player { Id = 1, Name = "Test Player", Position = "PG", TeamId = 1 });
+            _context.Players.Add(new Player { Id = 1, FirstName = "Test", LastName = "Player", Position = "PG", TeamId = 1 });
             await _context.SaveChangesAsync();
 
             var result = await _service.GetInjuryScoreAsync(1);
@@ -46,7 +46,7 @@ namespace NBAStatisticsProject.Tests
         [Fact]
         public async Task GetInjuryScore_PlayerWithInjury_ScoreBelowTen()
         {
-            _context.Players.Add(new Player { Id = 1, Name = "Injured", Position = "C", TeamId = 1 });
+            _context.Players.Add(new Player { Id = 1, FirstName = "Injured", LastName = "Player", Position = "C", TeamId = 1 });
 
             _context.Injuries.Add(new Injury
             {
@@ -117,7 +117,7 @@ namespace NBAStatisticsProject.Tests
         [InlineData(InjurySeverity.Severe)]
         public async Task GetInjuryScore_AnySeverity_ScoreInValidRange(InjurySeverity severity)
         {
-            _context.Players.Add(new Player { Id = 1, Name = "Test Player", Position = "PG", TeamId = 1 });
+            _context.Players.Add(new Player { Id = 1, FirstName = "Test", LastName = "Player", Position = "PG", TeamId = 1 });
 
             _context.Injuries.Add(new Injury
             {
@@ -143,9 +143,9 @@ namespace NBAStatisticsProject.Tests
         [Fact]
         public async Task GetAllInjuryScores_HealthyAndInjuredPlayer_ReturnsScoreForBoth()
         {
-            _context.Players.Add(new Player { Id = 1, Name = "Injured", Position = "C", TeamId = 1 });
+            _context.Players.Add(new Player { Id = 1, FirstName = "Injured", LastName = "Player", Position = "C", TeamId = 1 });
 
-            _context.Players.Add(new Player { Id = 2, Name = "Healthy", Position = "PG", TeamId = 1 });
+            _context.Players.Add(new Player { Id = 2, FirstName = "Healthy", LastName = "Player", Position = "PG", TeamId = 1 });
 
             _context.Injuries.Add(new Injury
             {

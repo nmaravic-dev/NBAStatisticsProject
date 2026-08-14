@@ -9,7 +9,8 @@ namespace NBAStatisticsProject.Mapping
         {
             return query.Select(p => new PlayerDto(
                 p.Id,
-                p.Name,
+                p.FirstName,
+                p.LastName,
                 p.Position,
                 p.TeamId,
                 p.Team!.Name

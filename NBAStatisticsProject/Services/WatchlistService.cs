@@ -16,7 +16,7 @@ namespace NBAStatisticsProject.Services
                 .Select(w => new WatchlistEntryDto(
                 w.Id,
                 w.PlayerId,
-                w.Player!.Name,
+                $"{w.Player!.FirstName} {w.Player!.LastName}",
                 w.Player.Position,
                 w.Player.Team!.Name
                 ))
@@ -44,7 +44,7 @@ namespace NBAStatisticsProject.Services
             return await _context.WatchlistEntries
                 .Where(w => w.Id == entry.Id)
                 .Select(w => new WatchlistEntryDto(
-                    w.Id, w.PlayerId, w.Player!.Name, w.Player.Position, w.Player.Team!.Name))
+                    w.Id, w.PlayerId, $"{w.Player!.FirstName} {w.Player!.LastName}", w.Player.Position, w.Player.Team!.Name))
                 .FirstAsync();
         }
 

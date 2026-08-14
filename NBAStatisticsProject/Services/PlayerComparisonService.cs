@@ -34,11 +34,11 @@ namespace NBAStatisticsProject.Services
         private static PlayerComparisonDto BuildComparison(Player player, List<PlayerGameStat> stats)
         {
             if (stats.Count == 0)
-                return new PlayerComparisonDto(player.Id, player.Name, 0, 0, 0, 0, 0, 0, 0, 0);
+                return new PlayerComparisonDto(player.Id, $"{player.FirstName} {player.LastName}", 0, 0, 0, 0, 0, 0, 0, 0);
 
             return new PlayerComparisonDto(
                 PlayerId: player.Id,
-                PlayerName: player.Name,
+                PlayerName: $"{player.FirstName} {player.LastName}",
                 GamesPlayed: stats.Count,
                 PointsPerGame: stats.Average(s => s.Points),
                 AssistsPerGame: stats.Average(s => s.Assists),
