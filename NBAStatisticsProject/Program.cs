@@ -32,6 +32,7 @@ namespace NBAStatisticsProject
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IWatchlistService, WatchlistService>();
             builder.Services.AddScoped<IPlayerComparisonService, PlayerComparisonService>();
+            builder.Services.AddProblemDetails();
             builder.Services.AddIdentityCore<AppUser>()
                 .AddEntityFrameworkStores<DataContext>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -66,6 +67,8 @@ namespace NBAStatisticsProject
 
             var app = builder.Build();
 
+            app.UseExceptionHandler(_ => { });
+
             var forwardedOptions = new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedProto
@@ -83,12 +86,11 @@ namespace NBAStatisticsProject
             // Configure the HTTP request pipeline.
 
             app.UseCors("Frontend");
-            app.MapOpenApi();
-            app.MapScalarApiReference();
-
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapOpenApi();
+            app.MapScalarApiReference();
             app.MapControllers();
 
             app.Run();
