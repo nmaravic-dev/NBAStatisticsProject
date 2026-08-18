@@ -9,7 +9,7 @@ namespace NBAStatisticsProject.Services
         Task<List<PlayerDto>> GetPlayersByTeamAsync(int teamId);
         Task<int> GetCountAsync();
         Task<PlayerDto?> CreateAsync(PlayerCreateDto dto);
-        Task<List<PlayerDto>> CreateManyAsync(List<PlayerCreateDto> dtos);
+        Task<List<PlayerDto>?> CreateManyAsync(List<PlayerCreateDto> dtos);
         Task<PlayerDto?> UpdateAsync(int id, PlayerCreateDto dto);
         Task<bool> DeleteAsync(int id);
     }

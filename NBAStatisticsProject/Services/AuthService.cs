@@ -30,7 +30,7 @@ namespace NBAStatisticsProject.Services
             }                 
 
             var valid = await _userManager.CheckPasswordAsync(user, dto.Password);
-            if (!valid || user == null) 
+            if (!valid) 
             {
                 _logger.LogWarning("Failed login for existing user {Email}", dto.Email);
                 return null; 
