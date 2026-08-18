@@ -53,8 +53,12 @@ namespace NBAStatisticsProject.Services
                 .FirstAsync();
             return createdPlayer;
         }
-        public async Task<List<PlayerDto>> CreateManyAsync(List<PlayerCreateDto> dtos)
+        public async Task<List<PlayerDto>?> CreateManyAsync(List<PlayerCreateDto> dtos)
         {
+            var teamIds = dtos.Select(d => d.TeamId).Distinct().ToList();
+            var existing = await _context.Teams.CountAsync(t => teamIds.Contains(t.Id));
+            if (existing != teamIds.Count) return null;
+
             var players = dtos.Select(dto => new Player
             {
                 FirstName = dto.FirstName,
