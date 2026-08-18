@@ -37,6 +37,10 @@ Layered: Controllers (HTTP) → Services (business logic) → EF Core (data acce
 * Injury Susceptibility Score — a 0–10 availability rating derived from a player's injuries, weighting missed games by injury severity and overlapping injury periods with the team's schedule
 * JWT authentication with Identity: register, login, [Authorize]-protected endpoints
 * Personal watchlist: authenticated users follow players; ownership scoped to the token, never the request
+* Error handling: expected cases are explicit — the service returns
+  null and the controller maps it to the right status code.
+  Unhandled exceptions are caught by a global handler and returned as
+  RFC 7807 ProblemDetails, so stack traces never reach the client.
 
 ## Testing
 
@@ -60,3 +64,10 @@ Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database
 * Derived values (averages, injury score) are computed on read, not stored — the API keeps facts and derives the rest.
 * **Secrets via environment variables** — the JWT key and connection string are injected as Fly.io secrets, never committed. An early development key does exist in Git history; it was rotated and is no longer valid. History was left intact rather than rewritten, since this is a portfolio repo and the key is dead.
 * Known limitation — injury score needs games to score against. Availability is a ratio of played to missed games, so a player with no recorded games has no meaningful basis for a score. Distinguishing "insufficient data" from "fully available" is tracked as a follow-up.
+* Bulk endpoints validate foreign keys for players; the remaining bulk
+  endpoints are intended for import from an external source and will
+  need per-record reporting rather than all-or-nothing, so they are
+  left unvalidated for now.
+* No pagination yet — list endpoints return the full set. At the
+  current data size this is not a problem, but any production use
+  would need Skip/Take with a total count and a maximum page size.
