@@ -77,6 +77,9 @@ namespace NBAStatisticsProject.Services
         }
         public async Task<PlayerDto?> UpdateAsync(int id, PlayerCreateDto dto)
         {
+            if (!await _context.Teams.AnyAsync(t => t.Id == dto.TeamId))
+                return null;
+
             var player = await _context.Players.FindAsync(id);
             if (player == null) return null;
             player.FirstName = dto.FirstName;
