@@ -59,7 +59,7 @@ Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database
 ## Notes on decisions
 
 * Mapping extensions over AutoMapper — keeps projections explicit and visible in code, and lets EF translate them to SQL.
-* Service layer over a repository — EF Core's DbSet already acts as a repository, so Controller → Service → DbContext stays clean without an extra abstraction.
+* No repository layer — EF Core's DbSet already acts as a repository and DbContext as a unit of work, so Controller → Service → DbContext stays clean without an extra abstraction. 
 * No JsonPatch — it needed a separate mutable DTO and double mapping without adding anything over PUT.
 * Derived values (averages, injury score) are computed on read, not stored — the API keeps facts and derives the rest.
 * **Secrets via environment variables** — the JWT key and connection string are injected as Fly.io secrets, never committed. An early development key does exist in Git history; it was rotated and is no longer valid. History was left intact rather than rewritten, since this is a portfolio repo and the key is dead.
