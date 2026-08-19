@@ -64,10 +64,5 @@ Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database
 * Derived values (averages, injury score) are computed on read, not stored — the API keeps facts and derives the rest.
 * **Secrets via environment variables** — the JWT key and connection string are injected as Fly.io secrets, never committed. An early development key does exist in Git history; it was rotated and is no longer valid. History was left intact rather than rewritten, since this is a portfolio repo and the key is dead.
 * Known limitation — injury score needs games to score against. Availability is a ratio of played to missed games, so a player with no recorded games has no meaningful basis for a score. Distinguishing "insufficient data" from "fully available" is tracked as a follow-up.
-* Bulk endpoints validate foreign keys for players; the remaining bulk
-  endpoints are intended for import from an external source and will
-  need per-record reporting rather than all-or-nothing, so they are
-  left unvalidated for now.
-* No pagination yet — list endpoints return the full set. At the
-  current data size this is not a problem, but any production use
-  would need Skip/Take with a total count and a maximum page size.
+* Bulk endpoints exist to seed test data without adding records one by one. Only the player endpoint validates foreign keys; the rest are left open until ingestion from an external API lands, at which point they will need per-record reporting rather than all-or-nothing.
+* No pagination yet — list endpoints return the full set. At the current data size this is not a problem, but any production use would need Skip/Take with a total count and a maximum page size.
