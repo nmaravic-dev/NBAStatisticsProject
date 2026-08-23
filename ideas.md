@@ -1,7 +1,6 @@
 # Ideas
 
 ## Data model
-* Split Player.Name into FirstName/LastName (needs migration)
 * PlayerTeamHistory entity — track transfers, so stats belong to the team the player was on at the time
 * Soft delete for Player (like teams already have)
 
@@ -19,7 +18,6 @@
 * NBA betting predictions → multi-sport (long-term direction)
 
 ## Deployment & security
-* Add an appsettings.Development.example.json (placeholder values, committed) so the required config keys are documented without leaking secrets.
 * Bulk (CreateMany) endpoints are intentionally unvalidated — revisit once external API ingestion is built, since that will determine whether they stay or get replaced by a sync service.
 
 ## Frontend
