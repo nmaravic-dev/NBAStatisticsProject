@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
 using NBAStatisticsProject.Data;
 using NBAStatisticsProject.Models;
 using NBAStatisticsProject.Services;
@@ -35,6 +37,8 @@ namespace NBAStatisticsProject
             builder.Services.AddProblemDetails();
             builder.Services.AddIdentityCore<AppUser>()
                 .AddEntityFrameworkStores<DataContext>();
+            builder.Services.AddHealthChecks()
+                .AddDbContextCheck<DataContext>(tags: new[] { "ready" });
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -92,6 +96,14 @@ namespace NBAStatisticsProject
             app.MapOpenApi();
             app.MapScalarApiReference();
             app.MapControllers();
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = _ => false
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready")
+            });
 
             app.Run();
         }
