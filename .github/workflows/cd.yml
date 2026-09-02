@@ -27,5 +27,6 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only
+        working-directory: NBAStatisticsProject
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
