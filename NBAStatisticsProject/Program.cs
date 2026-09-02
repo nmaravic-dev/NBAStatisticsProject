@@ -81,12 +81,6 @@ namespace NBAStatisticsProject
             forwardedOptions.KnownProxies.Clear();
             app.UseForwardedHeaders(forwardedOptions);
 
-            // Apply pending migrations on startup (creates tables on the production DB)
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<DataContext>();
-                db.Database.Migrate();
-            }
             // Configure the HTTP request pipeline.
 
             app.UseCors("Frontend");
