@@ -37,24 +37,34 @@ Layered: Controllers (HTTP) → Services (business logic) → EF Core (data acce
 * Injury Susceptibility Score — a 0–10 availability rating derived from a player's injuries, weighting missed games by injury severity and overlapping injury periods with the team's schedule
 * JWT authentication with Identity: register, login, [Authorize]-protected endpoints
 * Personal watchlist: authenticated users follow players; ownership scoped to the token, never the request
-* Error handling: expected cases are explicit — the service returns
-  null and the controller maps it to the right status code.
-  Unhandled exceptions are caught by a global handler and returned as
-  RFC 7807 ProblemDetails, so stack traces never reach the client.
+* Error handling: expected cases are explicit — the service returns null and the controller maps it to the right status code. Unhandled exceptions are caught by a global handler and returned as RFC 7807 ProblemDetails, so stack traces never reach the client.
+* Player comparison — two players side by side on per-game averages, fetched in two queries total rather than one per player
+* Players store first and last name separately; the split was a data migration that copied existing values before dropping the old column
 
 ## Testing
 
 * Unit tests implemented using **xUnit** and **EF Core In-Memory database**
+* Each test gets its own GUID-named database, so tests stay independent and can run in parallel
 * Covers the Injury Susceptibility Score calculation — severity weighting via `[Theory]`, batch scoring across players, and edge cases (non-existent player, clean injury record, empty database). Players with no recorded games are not yet covered.
+* In-memory is deliberate but limited — it exercises service logic, not SQL translation or database constraints. Integration tests against a real Postgres would be the next step.
 
 ## Deployment
 
-Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database is PostgreSQL hosted on Neon. Secrets (connection string, JWT key) are provided via environment variables, never committed. Migrations are applied automatically on startup. The app runs behind Fly's HTTPS proxy, with forwarded-header handling so OpenAPI reports the correct HTTPS server.
+* Containerized with a multi-stage Dockerfile and deployed to Fly.io, with PostgreSQL hosted on Neon
+* Secrets (connection string, JWT key) are provided via environment variables, never committed
+* The app runs behind Fly's HTTPS proxy, with forwarded-header handling so OpenAPI reports the correct HTTPS server
+* Health endpoints are split: `/health/live` reports only that the process is responding, `/health/ready` also checks the database. Fly probes liveness — probing readiness would let a sleeping Neon instance trigger a restart loop that a restart can't fix.
+
+## CI/CD
+
+* **CI** runs on every pull request — restore, build and test on a clean Ubuntu runner. Required by branch protection, so nothing merges red.
+* **CD** runs on push to master — builds, tests, applies migrations against the production database, then deploys to Fly.
+* Migrations run as a pipeline step rather than on application startup. A failed migration now stops the deploy instead of killing the process before Kestrel starts listening, which used to make the health endpoints unreachable and put Fly into a restart loop.
 
 ## Planned
 
-* Player comparison (head-to-head stats)
 * Data ingestion from external NBA API
+* Frontend (Angular or React) consuming the API
 
 ## Notes on decisions
 
@@ -66,3 +76,4 @@ Containerized with a multi-stage Dockerfile and deployed to Fly.io. The database
 * Known limitation — injury score needs games to score against. Availability is a ratio of played to missed games, so a player with no recorded games has no meaningful basis for a score. Distinguishing "insufficient data" from "fully available" is tracked as a follow-up.
 * Bulk endpoints exist to seed test data without adding records one by one. Only the player endpoint validates foreign keys; the rest are left open until ingestion from an external API lands, at which point they will need per-record reporting rather than all-or-nothing.
 * No pagination yet — list endpoints return the full set. At the current data size this is not a problem, but any production use would need Skip/Take with a total count and a maximum page size.
+* Rounding is left to the client — the API returns raw averages, since formatting is a presentation concern.
